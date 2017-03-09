@@ -8,6 +8,8 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 
 # compile setting
 set(CMAKE_CXX_STANDARD 11)
+option(i686 "support for i686" OFF)
+#SET(MYVAR "Test" CACHE STRING "This is my variable")
 
 #include path
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -15,12 +17,22 @@ include_directories("neurosky")
 
 # link library path
 if(WIN32)
-link_directories("lib/win32/")
+    if(i686)
+        link_directories("lib/win32/")
+    else(i686)
+        link_directories("lib/x64/")
+    endif(i686)
 endif(WIN32)
 
 #qt setting
 if(WIN32)
-set(CMAKE_PREFIX_PATH "C:\\Qt\\5.7\\msvc2015\\")
+    if(i686)
+        set(CMAKE_PREFIX_PATH "C:\\Qt\\5.7\\msvc2015\\")
+    else(i686)
+        set(CMAKE_PREFIX_PATH "C:\\Qt\\5.7\\msvc2015_64\\")
+    endif(i686)
+elseif(APPLE)
+    set(CMAKE_PREFIX_PATH "/Qt/5.8/clang_64")
 endif(WIN32)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5SerialPort REQUIRED)
@@ -49,4 +61,19 @@ COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5SerialPortd.dll 
 COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_HOME_DIRECTORY}/lib/win32/thinkgear.dll ${CMAKE_BINARY_DIR}/Debug
 # Output Message
 COMMENT "Copying Qt binaries" VERBATIM)
+elseif(APPLE)
+    ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+    # DEBUG
+    mkdir Snake.app/Contents/Frameworks
+    cp -R /path/to/Qt/lib/QtCore.framework
+            plugandpaint.app/Contents/Frameworks
+    cp -R /path/to/Qt/lib/QtGui.framework
+           plugandpaint.app/Contents/Frameworks
+    COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Cored.dll ${CMAKE_BINARY_DIR}/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Guid.dll ${CMAKE_BINARY_DIR}/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Widgetsd.dll ${CMAKE_BINARY_DIR}/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5SerialPortd.dll ${CMAKE_BINARY_DIR}/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_HOME_DIRECTORY}/lib/win32/thinkgear.dll ${CMAKE_BINARY_DIR}/Debug
+    # Output Message
+    COMMENT "Copying Qt binaries" VERBATIM)
 endif(WIN32)
