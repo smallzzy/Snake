@@ -4,7 +4,7 @@
 
 #include "mainwindow.h"
 #include <QApplication>
-#include "thinkgear.h"
+//#include "thinkgear.h"
 
 /**
 * Prompts and waits for the user to press ENTER.

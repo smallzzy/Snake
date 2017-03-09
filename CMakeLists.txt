@@ -6,34 +6,39 @@ set(CMAKE_CONFIGURATION_TYPES Debug;Release)
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_SUPPRESS_REGENERATION true)
 
+# default setting
+if(MSVC)
+    if(NOT "${CMAKE_GENERATOR}" MATCHES "(Win64|IA64)")
+        set(QT_DEFAULT_PATH "C:\\Qt\\5.7\\msvc2015\\")
+    else(i686)
+        set(QT_DEFAULT_PATH "C:\\Qt\\5.7\\msvc2015_64\\")
+    endif(i686)
+elseif(APPLE)
+    set(QT_DEFAULT_PATH "/Qt/5.8/clang_64")
+endif(WIN32)
+
 # compile setting
 set(CMAKE_CXX_STANDARD 11)
 option(i686 "support for i686" OFF)
-#SET(MYVAR "Test" CACHE STRING "This is my variable")
+set(QT_CURRENT_PATH ${QT_DEFAULT_PATH} CACHE STRING "The path to qt")
 
 #include path
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories("neurosky")
+#include_directories("neurosky")
 
 # link library path
-if(WIN32)
-    if(i686)
-        link_directories("lib/win32/")
-    else(i686)
-        link_directories("lib/x64/")
-    endif(i686)
-endif(WIN32)
+#if(WIN32)
+#    if(i686)
+#        link_directories("lib/win32/")
+#    else(i686)
+#        link_directories("lib/x64/")
+#    endif(i686)
+#elseif(APPLE)
+
+#endif(WIN32)
 
 #qt setting
-if(WIN32)
-    if(i686)
-        set(CMAKE_PREFIX_PATH "C:\\Qt\\5.7\\msvc2015\\")
-    else(i686)
-        set(CMAKE_PREFIX_PATH "C:\\Qt\\5.7\\msvc2015_64\\")
-    endif(i686)
-elseif(APPLE)
-    set(CMAKE_PREFIX_PATH "/Qt/5.8/clang_64")
-endif(WIN32)
+set(CMAKE_PREFIX_PATH ${QT_CURRENT_PATH})
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5SerialPort REQUIRED)
 set(CMAKE_AUTOMOC ON)
@@ -48,7 +53,7 @@ qt5_wrap_ui (UI_HEADERS ${UIS})
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI_HEADERS})
 
 # link
-target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::SerialPort thinkgear)
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::SerialPort )
 
 # dynamic link
 if(WIN32)
