@@ -7,7 +7,7 @@
 static const qreal SNAKE_SIZE = TILE_SIZE;
 
 Snake::Snake(GameController &controller) :
-    head(0, 0),
+    head(100, 100),
     growing(7),
     speed(5),
     moveDirection(NoMove),
@@ -45,7 +45,7 @@ QPainterPath Snake::shape() const
     QPainterPath path;
     path.setFillRule(Qt::WindingFill);
 
-    path.addRect(QRectF(0, 0, SNAKE_SIZE, SNAKE_SIZE));
+    path.addRect(QRectF(head.x(), head.y(), SNAKE_SIZE, SNAKE_SIZE));
 
     foreach (QPointF p, tail) {
         QPointF itemp = mapFromScene(p);
@@ -123,32 +123,32 @@ void Snake::advance(int step)
 void Snake::moveLeft()
 {
     head.rx() -= SNAKE_SIZE;
-    if (head.rx() < -100) {
-        head.rx() = 90;
+    if (head.rx() < 0) {
+        head.rx() = 190;
     }
 }
 
 void Snake::moveRight()
 {
     head.rx() += SNAKE_SIZE;
-    if (head.rx() >= 100) {
-        head.rx() = -100;
+    if (head.rx() >= 200) {
+        head.rx() = 0;
     }
 }
 
 void Snake::moveUp()
 {
     head.ry() -= SNAKE_SIZE;
-    if (head.ry() < -100) {
-        head.ry() = 90;
+    if (head.ry() < 0) {
+        head.ry() = 190;
     }
 }
 
 void Snake::moveDown()
 {
     head.ry() += SNAKE_SIZE;
-    if (head.ry() >= 100) {
-        head.ry() = -100;
+    if (head.ry() >= 200) {
+        head.ry() = 0;
     }
 }
 

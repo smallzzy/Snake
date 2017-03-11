@@ -3,6 +3,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 
+#include "constants.h"
 #include "gamecontroller.h"
 #include "food.h"
 #include "snake.h"
@@ -15,8 +16,9 @@ GameController::GameController(QGraphicsScene &scene, QObject *parent) :
 {
     timer.start( 1000/33 );
 
-	Food *a1 = new Food(0, -50);        
-    scene.addItem(a1);
+	//Food *a1 = new Food(0, -50);        
+    //scene.addItem(a1);
+	addNewFood();
 
     scene.addItem(snake);
     scene.installEventFilter(this);
@@ -72,8 +74,8 @@ void GameController::addNewFood()
     int x, y;
 
     do {
-		x = (int)(qrand() % 200) / 10 - 10;
-		y = (int)(qrand() % 200) / 10 - 10;
+		x = (int)(qrand() % SCENE_SIZE) ;
+		y = (int)(qrand() % SCENE_SIZE) ;
 
         x *= 10;
         y *= 10;

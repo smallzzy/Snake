@@ -1,3 +1,5 @@
+#include "mainwindow.h"
+
 #include <QGraphicsView>
 #include <QTimer>
 #include <qaction.h>
@@ -5,11 +7,15 @@
 #include <qapplication.h>
 #include <qmessagebox.h>
 #include <QIcon>
+#include <QDebug>
+#include <QThread>
+
+#include <iostream>
 
 #include "constants.h"
 #include "gamecontroller.h"
-#include "mainwindow.h"
-
+#include "settingsdialog.h"
+#include "neurosky.h"
 
 MainWindow::MainWindow(QWidget *parent):
 	QMainWindow(parent),
@@ -17,26 +23,56 @@ MainWindow::MainWindow(QWidget *parent):
 {
 	ui->setupUi(this);
 
-	scene = new QGraphicsScene(this);
-	ui->graphicsView->setScene(scene);
+    settings = new SettingsDialog;
 
-	
+    // main window size
+    resize(900, 900);
+    setWindowIcon(QIcon(":/images/snake_ico"));
+
+    // fix graphicsview size on mainwindow
+    ui->graphicsView->setFixedSize(500,500);
+
+    // disable scrolling
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff );
+    ui->graphicsView->viewport()->installEventFilter(this);
+
+    // force scene view point
+    scene = new QGraphicsScene(this);
+
+    ui->graphicsView->setScene(scene);
+    scene->setSceneRect(0, 0, 200, 200);
+    // view rect
+//    QRect viewRect(0, 0, 2000, 2000);
+//   ui->graphicsView->setSceneRect(0, 0, 200, 200);
+//    qDebug()<<scene->sceneRect();
+
+//       qDebug()<<ui->graphicsView->mapFromScene(100,100);
+//      qDebug()<<ui->graphicsView->sceneRect();
+
+
+ //  ui->graphicsView->centerOn(349,349);
+   // ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+
+  // ui->graphicsView->scale(500,500);
+
 	game = new GameController(*scene, this);
-    setCentralWidget(ui->graphicsView);
-//    resize(600, 600);
-    setFixedSize(600, 600);
-    setWindowIcon(QIcon(":/images/snake_ico")); 
 
-	createActions();
+	serialThread = new QThread;
 
-    initScene();
+    connectActions();
+
+    //initScene();
     initSceneBackground();
+
 
     QTimer::singleShot(0, this, SLOT(adjustViewSize()));
 }
 
 MainWindow::~MainWindow()
 {
+	//closeSerialPort();
+	delete settings;
 	delete ui;
 }
 
@@ -45,7 +81,7 @@ void MainWindow::adjustViewSize()
 	ui->graphicsView->fitInView(scene->sceneRect(), Qt::KeepAspectRatioByExpanding);
 }
 
-void MainWindow::createActions()
+void MainWindow::connectActions()
 {
 	//newGameAction = new QAction(tr("&New Game"), this);
 	//newGameAction->setShortcuts(QKeySequence::New);
@@ -74,17 +110,20 @@ void MainWindow::createActions()
 	//aboutAction->setStatusTip(tr("Show the application's about box"));
 	connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::about);
 
-	//aboutQtAction = new QAction(tr("About &Qt"), this);
-	//aboutQtAction->setStatusTip(tr("Show the Qt library's About box"));
+
 	connect(ui->actionAbout_Qt, &QAction::triggered, qApp, QApplication::aboutQt);
+
+    connect(ui->actionConfigure, &QAction::triggered, settings, &MainWindow::show);
+
+    connect(ui->actionConnect, &QAction::triggered, this, &MainWindow::openSerialPort);
+
+	connect(ui->actionDisconnect, &QAction::triggered, this, &MainWindow::closeSerialPort);
+
+	ui->actionDisconnect->setEnabled(false);
+
 }
 
 
-
-void MainWindow::initScene()
-{
-    scene->setSceneRect(-100, -100, 200, 200);
-}
 
 void MainWindow::initSceneBackground()
 {
@@ -112,4 +151,45 @@ void MainWindow::gameHelp()
 {
 	QMessageBox::about(this, tr("Game Help"), tr("Using direction keys to control the snake to eat the food"
 		"<p>Space - pause & resume"));
+}
+
+// disable graphicview scroll
+bool MainWindow::eventFilter(QObject *object, QEvent *event)
+{
+    if (object == ui->graphicsView->viewport() && event->type() == QEvent::Wheel) {
+        //qDebug() << "SCroll";
+        return true;
+    }
+    return false;
+}
+
+
+void MainWindow::openSerialPort()
+{
+	SettingsDialog::Settings p = settings->settings();
+	std::string portName = "\\\\.\\";
+	portName += p.name.toUtf8().constData();
+
+	worker = new Neurosky(portName);
+	worker->moveToThread(serialThread);
+	
+	connect(worker, SIGNAL(signalStatus(QString)), this, SLOT(updateStatus(QString)));
+	connect(serialThread, SIGNAL(started()), worker, SLOT(process()));
+	connect(worker, SIGNAL(finished()), serialThread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(serialThread, SIGNAL(finished()), serialThread, SLOT(deleteLater()));
+	serialThread->start();
+
+	ui->actionConnect->setEnabled(false);
+	ui->actionDisconnect->setEnabled(true);
+}
+
+void MainWindow::closeSerialPort()
+{
+	QTimer::singleShot(0, worker, SLOT(quit()));
+}
+
+void MainWindow::updateStatus(QString status)
+{
+	ui->statusbar->showMessage(status);
 }

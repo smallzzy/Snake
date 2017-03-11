@@ -43,7 +43,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
             NAMES thinkgear64
             PATH_SUFFIXES "x64")
     endif()
-    get_filename_component(NEUROSKY_STREAM_DIR ${NEUROSKY_STREAM} DIRECTORY)
     include_directories(${NEUROSKY_HEADER_PATH})
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 find_library(NEUROSKY_STREAM AlgoSdk)
@@ -77,8 +76,8 @@ COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Cored.dll ${CMAK
 COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Guid.dll ${CMAKE_BINARY_DIR}/Debug
 COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Widgetsd.dll ${CMAKE_BINARY_DIR}/Debug
 COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5SerialPortd.dll ${CMAKE_BINARY_DIR}/Debug
-COMMAND ${CMAKE_COMMAND} -E copy ${NEUROSKY_STREAM_DIR}/thinkgear.dll ${CMAKE_BINARY_DIR}/Debug
-
+COMMAND ${CMAKE_COMMAND} -E copy ${NEUROSKY_STREAM_PATH}/win32/thinkgear.dll ${CMAKE_BINARY_DIR}/Debug
+COMMAND ${CMAKE_COMMAND} -E copy ${NEUROSKY_ALGO_PATH}/AlgoSdkDll.dll ${CMAKE_BINARY_DIR}/Debug
 # Output Message
 COMMENT "Copying Qt binaries" VERBATIM)
 
@@ -89,7 +88,8 @@ COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Cored.dll ${CMAK
 COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Guid.dll ${CMAKE_BINARY_DIR}/Debug
 COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5Widgetsd.dll ${CMAKE_BINARY_DIR}/Debug
 COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/Qt5SerialPortd.dll ${CMAKE_BINARY_DIR}/Debug
-COMMAND ${CMAKE_COMMAND} -E copy ${NEUROSKY_STREAM_DIR}/thinkgear64.dll ${CMAKE_BINARY_DIR}/Debug
+COMMAND ${CMAKE_COMMAND} -E copy ${NEUROSKY_STREAM_PATH}/x64/thinkgear64.dll ${CMAKE_BINARY_DIR}/Debug
+COMMAND ${CMAKE_COMMAND} -E copy ${NEUROSKY_ALGO_PATH}/AlgoSdkDll64.dll ${CMAKE_BINARY_DIR}/Debug
 COMMENT "Copying Neuosky binaries" VERBATIM)
 endif()
 elseif(APPLE)

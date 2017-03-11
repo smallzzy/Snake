@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 const int TILE_SIZE = 10;
+const int SCENE_SIZE = 20;
 
 enum GameObjectsData {
     GD_Type

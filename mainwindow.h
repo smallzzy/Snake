@@ -22,6 +22,8 @@ class MainWindow;
 QT_END_NAMESPACE
 
 class GameController;
+class SettingsDialog;
+class Neurosky;
 
 class MainWindow : public QMainWindow
 {
@@ -31,31 +33,34 @@ public:
 	//MainWindow(QWidget * parent);
 	~MainWindow();
 
+protected:
+     bool eventFilter(QObject *object, QEvent *event);
+
 private slots:
+    void openSerialPort();
+	void closeSerialPort();
+
     void adjustViewSize();
+	void updateStatus(QString status);
 	void newGame();
 	void gameHelp();
 	void about();
 
 private:
-	void createActions();
+    void connectActions();
 
-    void initScene();
     void initSceneBackground();
 
 	Ui::MainWindow *ui;
     QGraphicsScene *scene;
-    //QGraphicsView *view;
 
+    SettingsDialog *settings;
     GameController *game;
 
-	//QAction *newGameAction;
-	//QAction *pauseAction;
-	//QAction *resumeAction;
-	//QAction *exitAction;
-	//QAction *gameHelpAction;
-	//QAction *aboutAction;
-	//QAction *aboutQtAction;
+	QThread* serialThread;
+	Neurosky* worker;
+
 };
+
 
 #endif // MAINWINDOW_H
