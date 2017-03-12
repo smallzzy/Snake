@@ -26,6 +26,8 @@ public:
     void setMoveDirection(Direction direction);
 	Direction currentDirection();
 
+	void changeSpeed(int speed);
+
 protected:
     void advance(int step);
 

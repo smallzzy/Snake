@@ -37,6 +37,11 @@ void GameController::snakeAteFood(Food *food)
     addNewFood();
 }
 
+void GameController::changeSpeed(int speed)
+{
+	snake->changeSpeed(speed);
+}
+
 //void GameController::snakeHitWall(Snake *snake, Wall *wall)
 //{
 //}

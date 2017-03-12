@@ -41,7 +41,7 @@ private slots:
 	void closeSerialPort();
 
     void adjustViewSize();
-	void updateStatus(QString status);
+	void updateStatus();
 	void newGame();
 	void gameHelp();
 	void about();
@@ -57,8 +57,10 @@ private:
     SettingsDialog *settings;
     GameController *game;
 
-	QThread* serialThread;
-	Neurosky* worker;
+	QThread* threadNeurosky;
+	Neurosky* objectNeurosky;
+
+	bool serialRunning;
 
 };
 

@@ -80,6 +80,11 @@ Snake::Direction Snake::currentDirection()
 	return moveDirection;
 }
 
+void Snake::changeSpeed(int speed)
+{
+	this->speed = speed;
+}
+
 void Snake::advance(int step)
 {
     if (!step) {

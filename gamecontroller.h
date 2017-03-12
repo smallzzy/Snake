@@ -19,6 +19,7 @@ public:
     ~GameController();
 
     void snakeAteFood(Food *food);
+	void changeSpeed(int speed);
 //    void snakeHitWall(Snake *snake, Wall *wall);
     void snakeAteItself();
 

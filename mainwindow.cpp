@@ -58,7 +58,6 @@ MainWindow::MainWindow(QWidget *parent):
 
 	game = new GameController(*scene, this);
 
-	serialThread = new QThread;
 
     connectActions();
 
@@ -71,7 +70,10 @@ MainWindow::MainWindow(QWidget *parent):
 
 MainWindow::~MainWindow()
 {
-	//closeSerialPort();
+	if (serialRunning)
+	{
+		closeSerialPort();
+	}
 	delete settings;
 	delete ui;
 }
@@ -170,26 +172,51 @@ void MainWindow::openSerialPort()
 	std::string portName = "\\\\.\\";
 	portName += p.name.toUtf8().constData();
 
-	worker = new Neurosky(portName);
-	worker->moveToThread(serialThread);
+	objectNeurosky= new Neurosky(portName);
+	threadNeurosky = new QThread;
+
+	objectNeurosky->moveToThread(threadNeurosky);
 	
-	connect(worker, SIGNAL(signalStatus(QString)), this, SLOT(updateStatus(QString)));
-	connect(serialThread, SIGNAL(started()), worker, SLOT(process()));
-	connect(worker, SIGNAL(finished()), serialThread, SLOT(quit()));
-	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	connect(serialThread, SIGNAL(finished()), serialThread, SLOT(deleteLater()));
-	serialThread->start();
+	connect(objectNeurosky, SIGNAL(signalUpdate()), this, SLOT(updateStatus()));
+	connect(objectNeurosky, SIGNAL(signalUpdate()), this, SLOT(updateStatus()));
+	connect(threadNeurosky, SIGNAL(started()), objectNeurosky, SLOT(process()));
+	connect(objectNeurosky, SIGNAL(signalFinished()), threadNeurosky, SLOT(quit()));
+	connect(objectNeurosky, SIGNAL(signalFinished()), objectNeurosky, SLOT(deleteLater()));
+	connect(threadNeurosky, SIGNAL(finished()), threadNeurosky, SLOT(deleteLater()));
+	threadNeurosky->start();
 
 	ui->actionConnect->setEnabled(false);
 	ui->actionDisconnect->setEnabled(true);
+	serialRunning = true;
 }
 
 void MainWindow::closeSerialPort()
 {
-	QTimer::singleShot(0, worker, SLOT(quit()));
+	{
+		/* Create the QEventLoop */
+		QEventLoop pause;
+		/* connect the QHttp.requestFinished() Signal to the QEventLoop.quit() Slot */
+		pause.connect(objectNeurosky, SIGNAL(signalDestroyed()), SLOT(quit()));
+		/* The code that will run during the QEventLoop */
+		objectNeurosky->quit2();
+
+		qDebug() << "wait for serial exit";
+		/* Execute the QEventLoop - it will quit when the above finished due to the connect() */
+		pause.exec();
+	}
+
+	ui->actionConnect->setEnabled(true);
+	ui->actionDisconnect->setEnabled(false);
 }
 
-void MainWindow::updateStatus(QString status)
+void MainWindow::updateStatus()
 {
-	ui->statusbar->showMessage(status);
+	Neurosky::Output p = objectNeurosky->output();
+	ui->labelQuality->setText(p.signalQuality);
+	ui->labelAttValue->setText(QString::number(p.attValue));
+
+	game->changeSpeed((int)(-0.09 *p.attValue + 10));
+
+
+//	ui->statusbar->showMessage(status);
 }
